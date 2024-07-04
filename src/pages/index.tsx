@@ -1,17 +1,12 @@
+import { GetStaticProps } from "next";
 import Image from "next/future/image";
 
 import { useKeenSlider } from 'keen-slider/react';
 
+import { stripe } from "../lib/stripe";
 import { HomeContainer, Product } from "../styles/pages/home";
 
-import camiseta1 from '../assets/camisetas/1.png';
-import camiseta2 from '../assets/camisetas/2.png';
-import camiseta3 from '../assets/camisetas/3.png';
-
 import 'keen-slider/keen-slider.min.css';
-import { resolve } from "path";
-import { stripe } from "../lib/stripe";
-import { GetServerSideProps } from "next";
 import Stripe from "stripe";
 
 interface HomeProps {
@@ -51,7 +46,17 @@ export default function Home({ products }: HomeProps) {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+/**
+*versão original; executa em todas as requisições
+*export const getServerSideProps: GetServerSideProps = async () => {
+*/
+
+/**
+ * Não funciona em ambiente de desenvolvimento, apenas quando o Next.js cria uma versão estática da página, 
+ * ou seja, quando criamos um build da aplicação por meio do npm run build; 
+ * é usado quando o resultado da requisição não muda muito
+ */
+export const getStaticProps: GetStaticProps = async () => {
   const response = await stripe.products.list({
     expand: ['data.default_price'],
   })
@@ -70,6 +75,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {
       products
-    }
+    },
+    revalidate: 60 * 60 * 2,//em segundos
   }
 }
