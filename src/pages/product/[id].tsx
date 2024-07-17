@@ -5,6 +5,7 @@ import Stripe from 'stripe';
 import Image from 'next/future/image';
 import axios from 'axios';
 import { useState } from 'react';
+import Head from 'next/head';
 
 interface ProductProps {
   product: {
@@ -19,7 +20,7 @@ interface ProductProps {
 
 export default function Product({ product }: ProductProps) {
   const [isCreatingCheckoutSession, setiIsCreatingCheckoutSession] = useState(false)
-  
+
   // const { isFallback } = useRouter()
 
   // if (isFallback) {
@@ -52,34 +53,40 @@ export default function Product({ product }: ProductProps) {
   }
 
   return (
-    <ProductContainer>
-      <ImageContainer>
-        <Image src={product.imageUrl} width={520} height={480} alt="" />
-      </ImageContainer>
-      <ProductDetails>
-        <h1>{product.name}</h1>
-        <span>{product.price}</span>
+    <>
+      <Head>
+        <title>{product.name} | Ignite Shop</title>
+      </Head>
 
-        <p>{product.description}</p>
+      <ProductContainer>
+        <ImageContainer>
+          <Image src={product.imageUrl} width={520} height={480} alt="" />
+        </ImageContainer>
+        <ProductDetails>
+          <h1>{product.name}</h1>
+          <span>{product.price}</span>
 
-        <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
-          Comprar agora
-        </button>
-      </ProductDetails>
-    </ProductContainer>
+          <p>{product.description}</p>
+
+          <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
+            Comprar agora
+          </button>
+        </ProductDetails>
+      </ProductContainer>
+    </>
   )
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    // Buscar os produtos mais vendidos ou mais acessados
+  // Buscar os produtos mais vendidos ou mais acessados
 
-    return {
-      paths: [
-        { params: { id: 'prod_QOyjVWHUm0Dvqv' }}
-      ],
-      //fallback: true,
-      fallback: 'blocking', //Não precisaria do isFallBack
-    }
+  return {
+    paths: [
+      { params: { id: 'prod_QOyjVWHUm0Dvqv' } }
+    ],
+    //fallback: true,
+    fallback: 'blocking', //Não precisaria do isFallBack
+  }
 }
 
 export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ params }) => {
