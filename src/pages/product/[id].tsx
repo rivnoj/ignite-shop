@@ -3,7 +3,8 @@ import { stripe } from '../../lib/stripe';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Stripe from 'stripe';
 import Image from 'next/future/image';
-import { useRouter } from 'next/router';
+import axios from 'axios';
+import { useState } from 'react';
 
 interface ProductProps {
   product: {
@@ -17,13 +18,37 @@ interface ProductProps {
 }
 
 export default function Product({ product }: ProductProps) {
+  const [isCreatingCheckoutSession, setiIsCreatingCheckoutSession] = useState(false)
+  
   // const { isFallback } = useRouter()
 
   // if (isFallback) {
   //   return <p>Loading...</p>
   // }
-  function handleBuyProduct() {
-    console.log(product.defaultPriceId)
+  async function handleBuyProduct() {
+    setiIsCreatingCheckoutSession(true);
+    //caso a rota seja interna
+    //const router = useRouter()
+
+    try {
+      const response = await axios.post('/api/checkout', {
+        priceId: product.defaultPriceId,
+      })
+
+      const { checkoutUrl } = response.data;
+
+      //caso a rota seja interna
+      //router.push('/checkout')
+
+      //caso a rota seja externa
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      // Conectar com uma ferramenta de observabilidade (Datadog / Sentry)
+
+      setiIsCreatingCheckoutSession(false);
+
+      alert('Falha ao redirecionar ao checkout!')
+    }
   }
 
   return (
@@ -37,7 +62,7 @@ export default function Product({ product }: ProductProps) {
 
         <p>{product.description}</p>
 
-        <button onClick={handleBuyProduct}>
+        <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
           Comprar agora
         </button>
       </ProductDetails>
